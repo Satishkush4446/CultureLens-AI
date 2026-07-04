@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../../context/TripContext';
 import GlassCard from '../common/GlassCard';
@@ -23,15 +23,17 @@ export default function SearchForm() {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [validationError, setValidationError] = useState('');
 
-  const toggleInterest = (id) => {
-    if (selectedInterests.includes(id)) {
-      setSelectedInterests(selectedInterests.filter(item => item !== id));
-    } else {
-      setSelectedInterests([...selectedInterests, id]);
-    }
-  };
+  const toggleInterest = useCallback((id) => {
+    setSelectedInterests(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     setValidationError('');
 
@@ -42,7 +44,7 @@ export default function SearchForm() {
 
     // Trigger context search
     executeSearch(destinationInput, durationInput, selectedInterests, navigate);
-  };
+  }, [destinationInput, durationInput, selectedInterests, executeSearch, navigate]);
 
   return (
     <GlassCard className="w-full max-w-2xl mx-auto border-white/10 shadow-2xl">

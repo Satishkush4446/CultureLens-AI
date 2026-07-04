@@ -82,7 +82,7 @@ const DEMO_WEATHER = {
 };
 
 const DEMO_COORDS = { lat: 35.0116, lon: 135.7681, displayName: 'Kyoto, Japan' };
-// ──────────────────────────────────────────────────────────────────────────
+const tripCache = {};
 
 export const TripProvider = ({ children }) => {
   const [destination, setDestination] = useState('');
@@ -121,14 +121,26 @@ export const TripProvider = ({ children }) => {
       setDuration(searchDuration);
       setInterests(searchInterests);
       const days = Math.max(1, Math.min(searchDuration, DEMO_TRIP_DATA.itinerary.length));
-      setTripData({
+      const demoTripData = {
         ...DEMO_TRIP_DATA,
         destination: { ...DEMO_TRIP_DATA.destination, name: destName },
         itinerary: DEMO_TRIP_DATA.itinerary.slice(0, days),
-      });
+      };
+      setTripData(demoTripData);
       setWeatherData(DEMO_WEATHER);
       setGems(DEMO_GEMS);
       setCoords(DEMO_COORDS);
+      
+      // Cache demo result
+      const cacheKey = `${destName.toLowerCase().trim()}_${searchDuration}_${(searchInterests || []).sort().join(',')}`;
+      tripCache[cacheKey] = {
+        coords: DEMO_COORDS,
+        weatherData: DEMO_WEATHER,
+        gems: DEMO_GEMS,
+        tripData: demoTripData,
+        isDemo: true
+      };
+
       setLoading(false);
       setLoadingStatus('');
       navigate('/dashboard');
@@ -143,6 +155,23 @@ export const TripProvider = ({ children }) => {
     setDuration(searchDuration);
     setInterests(searchInterests);
 
+    const cacheKey = `${searchDest.toLowerCase().trim()}_${searchDuration}_${(searchInterests || []).sort().join(',')}`;
+    if (tripCache[cacheKey]) {
+      const cached = tripCache[cacheKey];
+      setDestination(searchDest);
+      setDuration(searchDuration);
+      setInterests(searchInterests);
+      setCoords(cached.coords);
+      setWeatherData(cached.weatherData);
+      setGems(cached.gems);
+      setTripData(cached.tripData);
+      setIsDemo(cached.isDemo);
+      setLoading(false);
+      setLoadingStatus('');
+      navigate('/dashboard');
+      return;
+    }
+
     const hasGeminiKey = !!import.meta.env.VITE_GEMINI_API_KEY;
     if (!hasGeminiKey) {
       activateDemoMode(searchDest, searchDuration, searchInterests, navigate);
@@ -152,7 +181,8 @@ export const TripProvider = ({ children }) => {
     try {
       setLoadingStatus('Locating destination on the map...');
       const location = await geocodeDestination(searchDest);
-      setCoords({ lat: location.lat, lon: location.lon, displayName: location.displayName });
+      const coordsVal = { lat: location.lat, lon: location.lon, displayName: location.displayName };
+      setCoords(coordsVal);
 
       setLoadingStatus('Fetching weather forecast & nearby attractions...');
       const [weatherResult, gemsResult] = await Promise.allSettled([
@@ -171,6 +201,16 @@ export const TripProvider = ({ children }) => {
       );
 
       setTripData(aiData);
+
+      // Cache successful live search results
+      tripCache[cacheKey] = {
+        coords: coordsVal,
+        weatherData: weather,
+        gems: gemsData,
+        tripData: aiData,
+        isDemo: false
+      };
+
       setLoading(false);
       setLoadingStatus('');
       navigate('/dashboard');

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -65,7 +65,7 @@ function MapRecenter({ lat, lon }) {
   return null;
 }
 
-export default function MapView({ coords, gems }) {
+const MapView = memo(function MapView({ coords, gems }) {
   const center = coords
     ? [coords.lat, coords.lon]
     : [20, 0]; // world fallback
@@ -144,4 +144,6 @@ export default function MapView({ coords, gems }) {
       })}
     </MapContainer>
   );
-}
+});
+
+export default MapView;

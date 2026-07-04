@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../../context/TripContext';
-import GlassCard from '../common/GlassCard';
 import MapView from './MapView';
 import ItineraryTab from './ItineraryTab';
 import CultureTab from './CultureTab';
@@ -110,21 +109,37 @@ export default function Dashboard() {
     }
   };
 
+  const handleKeyDown = useCallback((e, index) => {
+    let nextIndex;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (index + 1) % TABS.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + TABS.length) % TABS.length;
+    } else {
+      return;
+    }
+    setActiveTab(TABS[nextIndex].id);
+    // Focus the next tab element
+    setTimeout(() => {
+      document.getElementById(`tab-${TABS[nextIndex].id}`)?.focus();
+    }, 0);
+  }, [setActiveTab]);
+
   const destinationName = tripData?.destination?.name || destination || 'Your Destination';
   const countryName = tripData?.destination?.country || '';
   const summary = tripData?.destination?.summary || '';
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#0A0F1E]">
+    <main className="min-h-[calc(100vh-4rem)] bg-[#0A0F1E]">
       {/* Ambient glow */}
-      <div className="fixed top-32 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-sky-500/5 blur-[120px] pointer-events-none" />
+      <div className="fixed top-32 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-sky-500/5 blur-[120px] pointer-events-none" aria-hidden="true" />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
         {/* ── Demo Mode Banner ── */}
         {isDemo && (
-          <div className="mb-6 flex items-center space-x-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-            <svg className="h-4 w-4 flex-shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div role="alert" className="mb-6 flex items-center space-x-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+            <svg className="h-4 w-4 flex-shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-xs text-amber-300">
@@ -136,11 +151,11 @@ export default function Dashboard() {
         )}
 
         {/* ── Destination Header ── */}
-        <div className="mb-8">
+        <section className="mb-8" aria-label="Destination Information">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                <svg className="h-4 w-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 12.414a8 8 0 111.414-1.414l4.243 4.243a1 1 0 01-1.414 1.414z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -151,18 +166,18 @@ export default function Dashboard() {
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 {destinationName}
                 {countryName && (
-                  <span className="ml-2 text-xl font-normal text-slate-400">{countryName}</span>
+                  <span className="ml-2 text-xl font-normal text-slate-300">{countryName}</span>
                 )}
               </h1>
               {summary && (
-                <p className="mt-2 text-sm text-slate-400 max-w-2xl leading-relaxed">{summary}</p>
+                <p className="mt-2 text-sm text-slate-300 max-w-2xl leading-relaxed">{summary}</p>
               )}
             </div>
 
             {/* Meta badges */}
             <div className="flex flex-wrap gap-2">
               <span className="flex items-center space-x-1.5 rounded-lg border border-sky-500/20 bg-sky-500/5 px-3 py-1.5 text-xs font-semibold text-sky-400">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span>{duration || 5} Days</span>
@@ -174,20 +189,21 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* ── Interactive Map ── */}
-        <div className="mb-6">
+        <section className="mb-6" aria-labelledby="map-section-title">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            <h2 id="map-section-title" className="text-xs font-semibold uppercase tracking-widest text-slate-400">
               Destination Map
             </h2>
             {coords && (
-              <span className="text-xxs font-mono text-slate-600">
+              <span className="text-xxs font-mono text-slate-400">
                 {coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}
               </span>
             )}
           </div>
+          <div className="sr-only">Interactive map showing {destinationName} and historical points of interest. Use screen reader controls to access map details.</div>
           <div
             className="relative overflow-hidden rounded-2xl border border-white/5 shadow-xl shadow-black/20"
             style={{ height: '340px' }}
@@ -202,7 +218,7 @@ export default function Dashboard() {
                 { color: '#A855F7', label: 'Temple' },
                 { color: '#22C55E', label: 'Nature' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center space-x-1.5">
+                <div key={item.label} className="flex items-center space-x-1.5" aria-hidden="true">
                   <div
                     className="h-2.5 w-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: item.color, boxShadow: `0 0 6px ${item.color}80` }}
@@ -220,26 +236,36 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* ── Tab Navigation ── */}
         <div className="mb-6 overflow-x-auto">
-          <div className="flex min-w-max space-x-1 rounded-xl border border-white/5 bg-white/3 p-1.5">
-            {TABS.map((tab) => {
+          <div 
+            className="flex min-w-max space-x-1 rounded-xl border border-white/5 bg-white/3 p-1.5"
+            role="tablist"
+            aria-label="Trip planning options"
+          >
+            {TABS.map((tab, index) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
+                  id={`tab-${tab.id}`}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.id}`}
+                  tabIndex={isActive ? 0 : -1}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                    flex items-center space-x-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap
+                    flex items-center space-x-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none
                     ${isActive
                       ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }
                   `}
                 >
-                  {tab.icon}
+                  <span aria-hidden="true">{tab.icon}</span>
                   <span>{tab.label}</span>
                 </button>
               );
@@ -248,11 +274,17 @@ export default function Dashboard() {
         </div>
 
         {/* ── Tab Content ── */}
-        <div className="w-full">
+        <section 
+          id={`panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
+          className="w-full focus-visible:outline-none"
+          tabIndex={0}
+        >
           {renderTabContent()}
-        </div>
+        </section>
 
       </div>
-    </div>
+    </main>
   );
 }

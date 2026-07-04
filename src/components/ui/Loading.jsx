@@ -1,4 +1,3 @@
-import React from 'react';
 import GlassCard from '../common/GlassCard';
 
 export default function Loading({ statusText }) {
@@ -6,7 +5,7 @@ export default function Loading({ statusText }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0F1E]/90 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md text-center">
         {/* Animated Visual */}
-        <div className="relative mx-auto mb-8 h-24 w-24">
+        <div className="relative mx-auto mb-8 h-24 w-24" aria-hidden="true">
           <div className="absolute inset-0 rounded-full border-4 border-sky-500/10"></div>
           <div className="absolute inset-0 rounded-full border-4 border-t-sky-500 animate-spin"></div>
           <div className="absolute inset-2 rounded-full border-4 border-transparent border-b-orange-500 animate-spin [animation-duration:1.5s]"></div>
@@ -27,7 +26,7 @@ export default function Loading({ statusText }) {
         <h3 className="mb-2 text-xl font-bold tracking-tight text-white">
           Configuring Your CultureLens
         </h3>
-        <div className="mb-8 min-h-[24px]">
+        <div className="mb-8 min-h-[24px]" role="status" aria-live="polite">
           <p className="text-sm text-sky-400 font-mono inline-block border-r-2 border-sky-400 animate-pulse px-1">
             {statusText || 'Executing search coordinates...'}
           </p>

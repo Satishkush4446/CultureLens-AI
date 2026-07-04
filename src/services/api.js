@@ -32,7 +32,7 @@ export const geocodeDestination = async (query) => {
     throw new Error('Destination not found. Please try a different name.');
   } catch (error) {
     console.error('Geocoding error:', error);
-    throw new Error(error.response?.data?.message || 'Geocoding failed. Check connection.');
+    throw new Error(error.response?.data?.message || 'Geocoding failed. Check connection.', { cause: error });
   }
 };
 
@@ -121,7 +121,6 @@ export const fetchOpenTripGems = async (lat, lon, destinationName = '') => {
  * Ensures the Map is populated and beautiful even without a key.
  */
 const getFallbackGems = (lat, lon, destinationName) => {
-  const categories = ['temple', 'museum', 'monument', 'landmark', 'garden'];
   const baseName = destinationName.split(',')[0];
   
   return [
@@ -212,14 +211,14 @@ export const generateCulturalItinerary = async (destination, duration, interests
           const parsedData = JSON.parse(rawText);
           return parsedData;
         } catch (jsonErr) {
-          console.error('Failed to parse Gemini output as JSON:', rawText);
-          throw new Error('The AI generated a response that could not be parsed. Please try again.');
+          console.error('Failed to parse Gemini output as JSON:', rawText, jsonErr);
+          throw new Error('The AI generated a response that could not be parsed. Please try again.', { cause: jsonErr });
         }
       }
     }
     throw new Error('No content returned from Gemini.');
   } catch (error) {
     console.error('Gemini generateContent error:', error);
-    throw new Error(error.response?.data?.error?.message || error.message || 'Gemini generation failed.');
+    throw new Error(error.response?.data?.error?.message || error.message || 'Gemini generation failed.', { cause: error });
   }
 };

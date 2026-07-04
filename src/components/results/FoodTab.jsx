@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import GlassCard from '../common/GlassCard';
 
 const FALLBACK_FOOD = [
@@ -35,48 +35,55 @@ const categoryColors = {
 };
 
 const categoryIcon = (category) => {
+  let emoji = '🍴';
+  let label = 'Food';
   switch (category) {
     case 'Traditional Dish':
-      return '🍲';
+      emoji = '🍲';
+      label = 'Traditional Dish';
+      break;
     case 'Street Food':
-      return '🌮';
+      emoji = '🌮';
+      label = 'Street Food';
+      break;
     case 'Local Beverage':
-      return '🍵';
-    default:
-      return '🍴';
+      emoji = '🍵';
+      label = 'Local Beverage';
+      break;
   }
+  return <span role="img" aria-label={label}>{emoji}</span>;
 };
 
-export default function FoodTab({ food }) {
+const FoodTab = memo(function FoodTab({ food }) {
   const dishes = food && food.length > 0 ? food : FALLBACK_FOOD;
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-slate-500">{dishes.length} local delicacies curated for your journey</p>
+      <p className="text-xs text-slate-400">{dishes.length} local delicacies curated for your journey</p>
 
       <div className="grid gap-4">
         {dishes.map((item, idx) => {
-          const colorClass = categoryColors[item.category] || 'text-slate-400 bg-slate-500/10 border-slate-500/20';
+          const colorClass = categoryColors[item.category] || 'text-slate-300 bg-slate-500/10 border-slate-500/20';
           return (
             <GlassCard key={idx} hoverEffect className="space-y-3">
               <div className="flex items-start space-x-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/5 bg-slate-800/50 text-xl">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/5 bg-slate-800/50 text-xl" aria-hidden="true">
                   {categoryIcon(item.category)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-bold text-white">{item.name}</h4>
-                  <span className={`mt-1 inline-block rounded border px-2 py-0.5 text-xxs font-medium ${colorClass}`}>
+                  <span className={`mt-1 inline-block rounded border px-2 py-0.5 text-xxs font-semibold ${colorClass}`}>
                     {item.category || 'Local Specialty'}
                   </span>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">{item.description}</p>
+              <p className="text-xs text-slate-200 leading-relaxed">{item.description}</p>
 
               {item.whyTry && (
                 <div className="rounded-lg bg-white/3 border border-white/5 p-3">
-                  <p className="text-xxs font-semibold text-sky-400 mb-1 uppercase tracking-widest">Why You Must Try This</p>
-                  <p className="text-xs text-slate-400 leading-relaxed">{item.whyTry}</p>
+                  <p className="text-xxs font-bold text-sky-400 mb-1 uppercase tracking-widest">Why You Must Try This</p>
+                  <p className="text-xs text-slate-300 leading-relaxed">{item.whyTry}</p>
                 </div>
               )}
             </GlassCard>
@@ -85,4 +92,6 @@ export default function FoodTab({ food }) {
       </div>
     </div>
   );
-}
+});
+
+export default FoodTab;

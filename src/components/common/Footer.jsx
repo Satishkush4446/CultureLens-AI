@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function Footer() {
   return (
@@ -10,7 +9,7 @@ export default function Footer() {
         <p className="flex items-center space-x-1">
           <span>Made for</span>
           <span className="font-semibold text-sky-400/80">Prompt Wars Hackathon</span>
-          <span>⚡</span>
+          <span aria-hidden="true">⚡</span>
         </p>
       </div>
     </footer>

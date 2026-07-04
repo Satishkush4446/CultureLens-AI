@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import GlassCard from '../common/GlassCard';
 
 const FALLBACK_PACKING = [
@@ -56,17 +56,32 @@ function getCategoryStyle(cat) {
   return categoryColors[cat] || { icon: '📦', bg: 'bg-slate-500/10 border-slate-500/20', text: 'text-slate-400' };
 }
 
-export default function PackingTab({ packing }) {
-  const categories = packing && packing.length > 0 ? packing : FALLBACK_PACKING;
+const PackingTab = memo(function PackingTab({ packing }) {
   const [checked, setChecked] = useState({});
 
-  const toggleItem = (catIdx, itemIdx) => {
+  const categories = useMemo(() => {
+    return packing && packing.length > 0 ? packing : FALLBACK_PACKING;
+  }, [packing]);
+
+  const toggleItem = useCallback((catIdx, itemIdx) => {
     const key = `${catIdx}-${itemIdx}`;
     setChecked(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  }, []);
 
-  const totalItems = categories.reduce((sum, c) => sum + c.items.length, 0);
-  const checkedCount = Object.values(checked).filter(Boolean).length;
+  const handleKeyDown = useCallback((e, catIdx, itemIdx) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      toggleItem(catIdx, itemIdx);
+    }
+  }, [toggleItem]);
+
+  const totalItems = useMemo(() => {
+    return categories.reduce((sum, c) => sum + c.items.length, 0);
+  }, [categories]);
+
+  const checkedCount = useMemo(() => {
+    return Object.values(checked).filter(Boolean).length;
+  }, [checked]);
 
   return (
     <div className="space-y-6">
@@ -77,13 +92,13 @@ export default function PackingTab({ packing }) {
           <h3 className="text-sm font-bold text-white">Packing Progress</h3>
           <span className="text-sm font-bold text-sky-400">{checkedCount} / {totalItems}</span>
         </div>
-        <div className="h-2 w-full rounded-full bg-slate-800">
+        <div className="h-2 w-full rounded-full bg-slate-800" role="progressbar" aria-valuenow={checkedCount} aria-valuemin="0" aria-valuemax={totalItems}>
           <div
             className="h-2 rounded-full bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-500"
             style={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
           />
         </div>
-        <p className="text-xxs text-slate-500 mt-2">
+        <p className="text-xxs text-slate-400 mt-2">
           {checkedCount === totalItems && totalItems > 0
             ? '✅ All packed! You\'re ready to go.'
             : `${totalItems - checkedCount} items remaining`}
@@ -97,12 +112,12 @@ export default function PackingTab({ packing }) {
         return (
           <GlassCard key={catIdx} className="space-y-3">
             <div className="flex items-center space-x-3">
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg border text-base ${style.bg}`}>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg border text-base ${style.bg}`} aria-hidden="true">
                 {style.icon}
               </div>
               <div className="flex-1">
                 <h4 className={`text-sm font-bold ${style.text}`}>{cat.category}</h4>
-                <p className="text-xxs text-slate-600">{catChecked}/{cat.items.length} packed</p>
+                <p className="text-xxs text-slate-400">{catChecked}/{cat.items.length} packed</p>
               </div>
             </div>
 
@@ -114,7 +129,11 @@ export default function PackingTab({ packing }) {
                   <div
                     key={itemIdx}
                     onClick={() => toggleItem(catIdx, itemIdx)}
-                    className={`flex items-center space-x-3 rounded-lg p-2.5 cursor-pointer transition-all duration-200 select-none
+                    onKeyDown={(e) => handleKeyDown(e, catIdx, itemIdx)}
+                    tabIndex={0}
+                    role="checkbox"
+                    aria-checked={isChecked}
+                    className={`flex items-center space-x-3 rounded-lg p-2.5 cursor-pointer transition-all duration-200 select-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none
                       ${isChecked ? 'bg-white/5 opacity-60' : 'hover:bg-white/3'}`}
                   >
                     <div className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border transition-all duration-200
@@ -124,12 +143,12 @@ export default function PackingTab({ packing }) {
                       }`}
                     >
                       {isChecked && (
-                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
-                    <span className={`text-xs transition-all duration-200 ${isChecked ? 'line-through text-slate-600' : 'text-slate-300'}`}>
+                    <span className={`text-xs transition-all duration-200 ${isChecked ? 'line-through text-slate-500' : 'text-slate-200'}`}>
                       {item}
                     </span>
                   </div>
@@ -141,4 +160,6 @@ export default function PackingTab({ packing }) {
       })}
     </div>
   );
-}
+});
+
+export default PackingTab;

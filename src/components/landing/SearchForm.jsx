@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../../context/TripContext';
 import GlassCard from '../common/GlassCard';
@@ -57,7 +57,9 @@ export default function SearchForm() {
             <input
               id="destination"
               type="text"
-              className="w-full rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3.5 pl-11 text-white placeholder-slate-500 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition-all duration-200"
+              aria-invalid={!!validationError}
+              aria-describedby={validationError ? "destination-error" : undefined}
+              className="w-full rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3.5 pl-11 text-white placeholder-slate-500 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none focus:outline-none transition-all duration-200"
               placeholder="e.g. Kyoto, Oaxaca, Rome, Rajasthan..."
               value={destinationInput}
               onChange={(e) => setDestinationInput(e.target.value)}
@@ -70,13 +72,14 @@ export default function SearchForm() {
               viewBox="0 0 24 24" 
               stroke="currentColor" 
               strokeWidth={2}
+              aria-hidden="true"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 12.414a8 8 0 111.414-1.414l4.243 4.243a1 1 0 01-1.414 1.414zM10 16a6 6 0 100-12 6 6 0 000 12z" />
             </svg>
           </div>
           {validationError && (
-            <p className="text-xs text-orange-400 mt-1 flex items-center space-x-1">
-              <span>⚠️</span> <span>{validationError}</span>
+            <p id="destination-error" role="alert" className="text-xs text-orange-400 mt-1 flex items-center space-x-1">
+              <span aria-hidden="true">⚠️</span> <span>{validationError}</span>
             </p>
           )}
         </div>
@@ -94,12 +97,12 @@ export default function SearchForm() {
             type="range"
             min="1"
             max="10"
-            className="w-full h-1.5 rounded-lg bg-slate-800 accent-sky-500 cursor-pointer focus:outline-none"
+            className="w-full h-1.5 rounded-lg bg-slate-800 accent-sky-500 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none focus:outline-none"
             value={durationInput}
             onChange={(e) => setDurationInput(parseInt(e.target.value))}
             disabled={loading}
           />
-          <div className="flex justify-between text-xxs text-slate-500">
+          <div className="flex justify-between text-xxs text-slate-400">
             <span>1 Day</span>
             <span>3 Days</span>
             <span>5 Days</span>
@@ -110,10 +113,10 @@ export default function SearchForm() {
 
         {/* Cultural Interest Chips */}
         <div className="space-y-2 text-left">
-          <label className="text-sm font-semibold tracking-wide text-slate-300">
+          <span id="interests-group-label" className="text-sm font-semibold tracking-wide text-slate-300 block">
             Select Your Cultural Interests
-          </label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 pt-1">
+          </span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 pt-1" role="group" aria-labelledby="interests-group-label">
             {INTERESTS_PRESETS.map((interest) => {
               const isSelected = selectedInterests.includes(interest.id);
               return (
@@ -122,15 +125,16 @@ export default function SearchForm() {
                   type="button"
                   onClick={() => toggleInterest(interest.id)}
                   disabled={loading}
+                  aria-pressed={isSelected}
                   className={`
-                    flex items-center space-x-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all duration-300 cursor-pointer select-none
+                    flex items-center space-x-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all duration-300 cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none
                     ${isSelected 
                       ? 'border-sky-500/50 bg-sky-500/10 text-white shadow-lg shadow-sky-500/5' 
                       : 'border-white/5 bg-white/3 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-300'
                     }
                   `}
                 >
-                  <span className="text-sm">{interest.icon}</span>
+                  <span className="text-sm" aria-hidden="true">{interest.icon}</span>
                   <span className="truncate">{interest.label}</span>
                 </button>
               );
@@ -143,7 +147,8 @@ export default function SearchForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-sky-500/10 transition-all duration-300 cursor-pointer disabled:opacity-50"
+            aria-disabled={loading}
+            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-sky-500/10 transition-all duration-300 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
           >
             <span>Reveal Local Culture</span>
             <svg 
@@ -152,6 +157,7 @@ export default function SearchForm() {
               viewBox="0 0 24 24" 
               stroke="currentColor" 
               strokeWidth={2.5}
+              aria-hidden="true"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>

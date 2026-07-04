@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function GlassCard({ children, className = '', hoverEffect = false, onClick }) {
   return (

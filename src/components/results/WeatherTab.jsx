@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo, memo } from 'react';
 import GlassCard from '../common/GlassCard';
 
 // WMO Weather Interpretation Code mapping
@@ -31,25 +31,27 @@ function formatDate(dateStr) {
   return { day: days[d.getDay()], date: `${months[d.getMonth()]} ${d.getDate()}` };
 }
 
-export default function WeatherTab({ weatherData }) {
-  const forecast = weatherData?.forecast && weatherData.forecast.length > 0
-    ? weatherData.forecast
-    : FALLBACK_FORECAST;
+const WeatherTab = memo(function WeatherTab({ weatherData }) {
+  const forecast = useMemo(() => {
+    return weatherData?.forecast && weatherData.forecast.length > 0
+      ? weatherData.forecast
+      : FALLBACK_FORECAST;
+  }, [weatherData]);
 
   const isDemo = !weatherData?.forecast;
 
-  const maxOverall = Math.max(...forecast.map(d => d.maxTemp));
-  const minOverall = Math.min(...forecast.map(d => d.minTemp));
-  const avgRain = Math.round(forecast.reduce((s, d) => s + d.rainProb, 0) / forecast.length);
+  const maxOverall = useMemo(() => Math.max(...forecast.map(d => d.maxTemp)), [forecast]);
+  const minOverall = useMemo(() => Math.min(...forecast.map(d => d.minTemp)), [forecast]);
+  const avgRain = useMemo(() => Math.round(forecast.reduce((s, d) => s + d.rainProb, 0) / forecast.length), [forecast]);
 
   return (
     <div className="space-y-6">
       {isDemo && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-center space-x-2">
-          <svg className="h-4 w-4 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div role="alert" className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-center space-x-2">
+          <svg className="h-4 w-4 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-xs text-amber-400">Showing sample weather data. Real data loads after destination geocoding.</p>
+          <p className="text-xs text-amber-300">Showing sample weather data. Real data loads after destination geocoding.</p>
         </div>
       )}
 
@@ -61,16 +63,16 @@ export default function WeatherTab({ weatherData }) {
           { label: 'Avg Rain %', value: `${avgRain}%`, icon: '💧', color: 'text-blue-400' },
         ].map(stat => (
           <GlassCard key={stat.label} className="text-center py-4 space-y-1">
-            <div className="text-xl">{stat.icon}</div>
+            <div className="text-xl" aria-hidden="true">{stat.icon}</div>
             <div className={`text-base font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-xxs text-slate-500">{stat.label}</div>
+            <div className="text-xxs text-slate-400">{stat.label}</div>
           </GlassCard>
         ))}
       </div>
 
       {/* 7-Day Forecast */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">7-Day Forecast</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">7-Day Forecast</h3>
         <div className="space-y-2">
           {forecast.map((day, idx) => {
             const weather = getWeatherInfo(day.weatherCode);
@@ -89,23 +91,23 @@ export default function WeatherTab({ weatherData }) {
                   <p className={`text-xs font-bold ${isToday ? 'text-sky-400' : 'text-white'}`}>
                     {isToday ? 'Today' : dateInfo.day}
                   </p>
-                  <p className="text-xxs text-slate-500">{dateInfo.date}</p>
+                  <p className="text-xxs text-slate-400">{dateInfo.date}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg">{weather.icon}</span>
+                  <span className="text-lg" aria-hidden="true">{weather.icon}</span>
                   <span className={`text-xs ${weather.color} hidden sm:block`}>{weather.label}</span>
                 </div>
                 <div className="flex items-center space-x-3 text-right">
                   <div className="flex items-center space-x-1">
-                    <svg className="h-3 w-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="h-3 w-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                     </svg>
-                    <span className="text-xxs text-slate-400">{day.rainProb}%</span>
+                    <span className="text-xxs text-slate-300">{day.rainProb}%</span>
                   </div>
                   <div className="text-xs">
                     <span className="text-orange-400 font-semibold">{day.maxTemp}°</span>
-                    <span className="text-slate-600 mx-1">/</span>
-                    <span className="text-slate-400">{day.minTemp}°</span>
+                    <span className="text-slate-500 mx-1">/</span>
+                    <span className="text-slate-300">{day.minTemp}°</span>
                   </div>
                 </div>
               </div>
@@ -115,4 +117,6 @@ export default function WeatherTab({ weatherData }) {
       </div>
     </div>
   );
-}
+});
+
+export default WeatherTab;
